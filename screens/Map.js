@@ -4,11 +4,23 @@ import MapView, { Marker } from "react-native-maps";
 import { useEffect, useState } from "react";
 import * as Location from 'expo-location';
 
-import {EredivisieTeams} from "../teams/EredivisieTeams";
+// import {EredivisieTeams} from "../teams/EredivisieTeams";
+import { EredivisieTeams } from '../Components/teamService';
 
 export default function Map() {
     const [location, setLocation] = useState(null);
     const [region, setRegion] = useState(null);
+
+    const [teams, setTeams] = useState([]);
+
+    useEffect(() => {
+        async function loadTeams() {
+            const data = await EredivisieTeams();
+            setTeams(data);
+        }
+
+        loadTeams();
+    }, []);
 
     useEffect(() => {
         let subscription;
@@ -64,7 +76,7 @@ export default function Map() {
                     longitudeDelta: 0.6,
                 }}// set region on south holland
             >
-                {EredivisieTeams.map((team, index) => (
+                {teams.map((team, index) => (
                     <Marker
                         key={index}
                         coordinate={{

@@ -2,18 +2,30 @@ import { StatusBar } from 'expo-status-bar';
 import {StyleSheet, Text, View, FlatList, Image, Pressable} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { BackgroundContext } from '../Context/BackgroundContext';
-import { EredivisieTeams } from '../teams/EredivisieTeams';
-import {useContext} from "react";
+// import { EredivisieTeams } from '../teams/EredivisieTeams';
+import { EredivisieTeams } from '../Components/teamService';
+import {useContext, useEffect, useState} from "react";
 import TeamList from '../buttons/TeamList';
 
 export default function Home() {
     const navigation = useNavigation();
     const { backgroundColor } = useContext(BackgroundContext);
 
+    const [teams, setTeams] = useState([]);
+
+    useEffect(() => {
+        async function loadTeams() {
+            const data = await EredivisieTeams();
+            setTeams(data);
+        }
+
+        loadTeams();
+    }, []);
+
     return (
         <View style={[styles.container, { backgroundColor }]}>
             <FlatList
-                data={EredivisieTeams}
+                data={teams}
                 keyExtractor={(item, index) => index.toString()}
                 renderItem={({ item }) => (
                     <TeamList item={item} navigation={navigation} />
