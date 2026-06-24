@@ -1,43 +1,72 @@
 import { View, Text, Image, StyleSheet, Pressable, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BackgroundContext } from "../Context/BackgroundContext";
-
 
 export default function ClubDetails({ route }) {
     const { team } = route.params;
     const navigation = useNavigation();
     const { backgroundColor, textColor } = useContext(BackgroundContext);
+    const STORAGE_KEY = `notes_${team.id}`;
 
     const [notes, setNotes] = useState([]);
     const [input, setInput] = useState('');
     const [editingIndex, setEditingIndex] = useState(null);
 
+    useEffect(() => {
+        loadNotes();
+    }, []);
+
+    const loadNotes = async () => {
+        try {
+            const data = await AsyncStorage.getItem(STORAGE_KEY);
+            if (data !== null) {
+                setNotes(JSON.parse(data));
+            }
+        } catch (e) {
+            console.log("Error loading notes", e);
+        }
+    };
+
+    const saveNotesToStorage = async (newNotes) => {
+        try {
+            await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newNotes));
+        } catch (e) {
+            console.log("Error saving notes", e);
+        }
+    };
+
     const handleSaveNote = () => {
         if (input.trim() === '') return;
 
+        let updatedNotes;
+
         if (editingIndex !== null) {
-            const updated = [...notes];
-            updated[editingIndex] = input;
-            setNotes(updated);
+            updatedNotes = [...notes];
+            updatedNotes[editingIndex] = input;
             setEditingIndex(null);
         } else {
-            setNotes([...notes, input]);
+            updatedNotes = [...notes, input];
         }
-
+        setNotes(updatedNotes);
         setInput('');
+        saveNotesToStorage(updatedNotes);
     };
 
     const handleDelete = (index) => {
-        const filtered = notes.filter((_, i) => i !== index);
-        setNotes(filtered);
+        const updatedNotes = notes.filter((_, i) => i !== index);
+        setNotes(updatedNotes);
+
+        saveNotesToStorage(updatedNotes);
     };
 
     const handleEdit = (index) => {
         setInput(notes[index]);
         setEditingIndex(index);
     };
+
     return (
         <View style={[styles.container, { backgroundColor }]}>
 
@@ -59,13 +88,24 @@ export default function ClubDetails({ route }) {
 
             {notes.map((note, index) => (
                 <View key={index} style={styles.noteItem}>
-                    <Text style={{ flex: 1, color: textColor }}>{note}</Text>
-                    <Pressable onPress={() => handleEdit(index)}><Text style={{ color: 'blue' }}>Edit</Text></Pressable>
-                    <Pressable onPress={() => handleDelete(index)}><Text style={{ color: 'red' }}>Delete</Text></Pressable>
+                    <Text style={{ flex: 1, color: textColor }}>
+                        {note}
+                    </Text>
+
+                    <Pressable onPress={() => handleEdit(index)}>
+                        <Ionicons name="create" size={20} color="orange" />
+                    </Pressable>
+
+                    <Pressable onPress={() => handleDelete(index)}>
+                        <Ionicons name="trash" size={20} color="red" />
+                    </Pressable>
                 </View>
             ))}
             <Pressable
-                style={styles.mapButton}
+                style={({ pressed }) => [
+                    styles.mapButton,
+                    { opacity: pressed ? 0.7 : 1 }
+                ]}
                 onPress={() => navigation.navigate('Map', { team })}
             >
                 <Ionicons name="map" size={20} color="white" />
