@@ -1,16 +1,18 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View } from 'react-native';
 import MapView, { Marker, Polyline } from "react-native-maps";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import * as Location from 'expo-location';
 import { EredivisieTeams } from '../Components/teamService';
 
-export default function Map() {
+export default function Map({ route }) {
     const [location, setLocation] = useState(null);
     const [region, setRegion] = useState(null);
     const [teams, setTeams] = useState([]);
     const [selectedVenue, setSelectedVenue] = useState(null);
-    const [route, setRoute] = useState([]);
+    const [routeCoords, setRouteCoords] = useState([]);
+    const map = useRef(null);
+    const zoomedToTeam = useRef(false);
 
     useEffect(() => {
         async function loadTeams() {
@@ -42,12 +44,14 @@ export default function Map() {
 
                     setLocation(newLocation);
 
-                    setRegion({
-                        latitude,
-                        longitude,
-                        latitudeDelta: 0.05,
-                        longitudeDelta: 0.05,
-                    });
+                    if (!zoomedToTeam.current) {
+                        setRegion({
+                            latitude,
+                            longitude,
+                            latitudeDelta: 0.05,
+                            longitudeDelta: 0.05,
+                        });
+                    }
                 }
             );
         }
@@ -60,9 +64,34 @@ export default function Map() {
     }, []);
 
     useEffect(() => {
+        const team = route?.params?.team;
+        if (!team) return;
+        const coords = team.loc?.coordinates;
+        if (!coords || coords.length < 2) return;
+        const latitude = coords[1];
+        const longitude = coords[0];
+        setSelectedVenue({ latitude, longitude });
+
+        const regionForTeam = {
+            latitude,
+            longitude,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+        };
+
+        if (map.current && map.current.animateToRegion) {
+            map.current.animateToRegion(regionForTeam, 1000);
+            setRegion(regionForTeam);
+            zoomedToTeam.current = true;
+        } else {
+            setRegion(regionForTeam);
+        }
+    }, [route?.params?.team]);
+
+    useEffect(() => {
         async function fetchRoute() {
             if (!selectedVenue || !location) {
-                setRoute([]);
+                setRouteCoords([]);
                 return;
             }
             try {
@@ -84,8 +113,7 @@ export default function Map() {
                                 longitude,
                             })
                         );
-
-                    setRoute(coordinates);
+                    setRouteCoords(coordinates);
                 }
             } catch (error) {
                 console.error('Error fetching route:', error);
@@ -101,9 +129,32 @@ export default function Map() {
     return (
         <View style={styles.container}>
             <MapView
+                ref={map}
                 style={styles.map}
                 showsUserLocation={true}
-                region={region}
+                initialRegion={region}
+                onMapReady={() => {
+                    try {
+                        const team = route?.params?.team;
+                        if (!team || zoomedToTeam.current) return;
+                        const coords = team.loc?.coordinates;
+                        if (!coords || coords.length < 2) return;
+                        const latitude = coords[1];
+                        const longitude = coords[0];
+                        const regionForTeam = {
+                            latitude,
+                            longitude,
+                            latitudeDelta: 0.01,
+                            longitudeDelta: 0.01,
+                        };
+                        if (map.current && map.current.animateToRegion) {
+                            map.current.animateToRegion(regionForTeam, 1000);
+                            zoomedToTeam.current = true;
+                        }
+                    } catch (e) {
+                        console.warn('Error animating to team on map ready', e);
+                    }
+                }}
             >
                 {teams.map((team, index) => (
                     <Marker
@@ -123,9 +174,9 @@ export default function Map() {
                     />
                 ))}
                 
-                {route.length > 0 && (
+                {routeCoords.length > 0 && (
                     <Polyline
-                        coordinates={route}
+                        coordinates={routeCoords}
                         strokeWidth={5}
                     />
                 )}
