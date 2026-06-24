@@ -9,7 +9,7 @@ export default function ClubDetails({ route }) {
     const { team } = route.params;
     const navigation = useNavigation();
     const { backgroundColor, textColor } = useContext(BackgroundContext);
-    const STORAGE_KEY = `notes_${team.id}`;
+    const STORAGE_KEY = `notes_${team._id}`;
 
     const [notes, setNotes] = useState([]);
     const [input, setInput] = useState('');
