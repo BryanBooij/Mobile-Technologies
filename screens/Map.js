@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, Text } from 'react-native';
 import MapView, { Marker, Polyline } from "react-native-maps";
 import { useEffect, useState, useRef } from "react";
 import * as Location from 'expo-location';
@@ -11,6 +11,7 @@ export default function Map({ route }) {
     const [teams, setTeams] = useState([]);
     const [selectedVenue, setSelectedVenue] = useState(null);
     const [routeCoords, setRouteCoords] = useState([]);
+    const [travelTime, setTravelTime] = useState(null); // NEW
     const map = useRef(null);
     const zoomedToTeam = useRef(false);
 
@@ -66,8 +67,10 @@ export default function Map({ route }) {
     useEffect(() => {
         const team = route?.params?.team;
         if (!team) return;
+
         const coords = team.loc?.coordinates;
         if (!coords || coords.length < 2) return;
+
         const latitude = coords[1];
         const longitude = coords[0];
         setSelectedVenue({ latitude, longitude });
@@ -92,11 +95,11 @@ export default function Map({ route }) {
         async function fetchRoute() {
             if (!selectedVenue || !location) {
                 setRouteCoords([]);
+                setTravelTime(null);
                 return;
             }
             try {
                 const url =
-                    // OSRM free open source routing
                     `https://router.project-osrm.org/route/v1/driving/` +
                     `${location.coords.longitude},${location.coords.latitude};` +
                     `${selectedVenue.longitude},${selectedVenue.latitude}` +
@@ -106,21 +109,24 @@ export default function Map({ route }) {
                 const data = await response.json();
 
                 if (data.routes?.length) {
-                    const coordinates =
-                        data.routes[0].geometry.coordinates.map(
-                            ([longitude, latitude]) => ({
-                                latitude,
-                                longitude,
-                            })
-                        );
+                    const route = data.routes[0];
+
+                    const coordinates = route.geometry.coordinates.map(
+                        ([longitude, latitude]) => ({
+                            latitude,
+                            longitude,
+                        })
+                    );
+
                     setRouteCoords(coordinates);
+                    setTravelTime(Math.round(route.duration / 60));
                 }
             } catch (error) {
                 console.error('Error fetching route:', error);
             }
         }
         fetchRoute();
-    }, [selectedVenue]);
+    }, [selectedVenue, location]);
 
     if (!region) {
         return <View style={styles.container} />;
@@ -137,10 +143,13 @@ export default function Map({ route }) {
                     try {
                         const team = route?.params?.team;
                         if (!team || zoomedToTeam.current) return;
+
                         const coords = team.loc?.coordinates;
                         if (!coords || coords.length < 2) return;
+
                         const latitude = coords[1];
                         const longitude = coords[0];
+
                         const regionForTeam = {
                             latitude,
                             longitude,
@@ -173,7 +182,6 @@ export default function Map({ route }) {
                         }
                     />
                 ))}
-                
                 {routeCoords.length > 0 && (
                     <Polyline
                         coordinates={routeCoords}
@@ -181,6 +189,15 @@ export default function Map({ route }) {
                     />
                 )}
             </MapView>
+
+            {travelTime !== null && (
+                <View style={styles.infoBox}>
+                    <Text style={styles.infoText}>
+                        Estimated travel time: {travelTime} min
+                    </Text>
+                </View>
+            )}
+
             <StatusBar style="auto" />
         </View>
     );
@@ -194,5 +211,19 @@ const styles = StyleSheet.create({
     map: {
         width: '100%',
         height: '100%',
+    },
+    infoBox: {
+        position: 'absolute',
+        bottom: 40,
+        alignSelf: 'center',
+        backgroundColor: 'white',
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        borderRadius: 10,
+        elevation: 5,
+    },
+    infoText: {
+        fontSize: 16,
+        fontWeight: 'bold',
     },
 });
