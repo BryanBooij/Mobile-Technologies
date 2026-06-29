@@ -1,49 +1,56 @@
 import { StatusBar } from 'expo-status-bar';
-import {StyleSheet, Switch, Text, View} from 'react-native';
-import {useContext, useEffect, useState} from "react";
+import { StyleSheet, Switch, Text, View } from 'react-native';
+import { useContext, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import {BackgroundContext} from "../Context/BackgroundContext";
+import { BackgroundContext } from "../Context/BackgroundContext";
 
 export default function Settings() {
-    const [isEnabled, setIsEnabled] = useState(false);
-    const [isBackgroundColor, setIsBackgroundColor] = useState(true)
-    const { isDark, toggleBackground } = useContext(BackgroundContext);
-    const { backgroundColor, textColor } = useContext(BackgroundContext);
+    const { isDark, toggleBackground, backgroundColor, textColor } =
+        useContext(BackgroundContext);
 
-    const storeData = async (value) => {
-        try {
-            await AsyncStorage.setItem('background', value.toString());
-        } catch (e) {
-            console.log(e);
-        }
-    };
-
-    const getData = async () => {
-        try {
-            const value = await AsyncStorage.getItem('background');
-            if (value !== null) {
-                setIsEnabled(value === "true");
-            }
-        } catch (e) {
-            console.log(e);
-        }
-    };
-
+    // LOAD saved value on mount
     useEffect(() => {
-        getData();
+        const loadTheme = async () => {
+            try {
+                const value = await AsyncStorage.getItem("background");
+
+                // sync storage -> context
+                if (value !== null) {
+                    const parsed = value === "true";
+
+                    // only update if different (prevents flicker)
+                    if (parsed !== isDark) {
+                        toggleBackground();
+                    }
+                }
+            } catch (e) {
+                console.log(e);
+            }
+        };
+
+        loadTheme();
     }, []);
+
+    // SAVE whenever user toggles
+    const handleToggle = async () => {
+        try {
+            await AsyncStorage.setItem("background", (!isDark).toString());
+            toggleBackground();
+        } catch (e) {
+            console.log(e);
+        }
+    };
 
     return (
         <View style={[styles.container, { backgroundColor }]}>
-            <Text style={[styles.text, { color: textColor }]}>Settings page</Text>
-            <Text style={[styles.text, { color: textColor }]}>Turn on DarkMode </Text>
+            <Text style={[styles.text, { color: textColor }]}>Turn on DarkMode</Text>
             <View style={styles.switch}>
                 <Switch
                     style={styles.switch}
-                    trackColor={{false: '#000000', true: '#ffffff'}}
-                    thumbColor={isEnabled ? '#000000' : '#c3c3c3'}
+                    trackColor={{ false: "#000000", true: "#ffffff" }}
+                    thumbColor={isDark ? "#000000" : "#ffffff"}
                     ios_backgroundColor="#3e3e3e"
-                    onValueChange={toggleBackground}
+                    onValueChange={handleToggle}
                     value={isDark}
                 />
             </View>
@@ -52,22 +59,21 @@ export default function Settings() {
     );
 }
 
-let isBackgroundColor;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: isBackgroundColor ? '#fff' : '#000',
+        alignItems: "center",
+        justifyContent: "center",
     },
     switch: {
         flex: 0,
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
     },
     text: {
         flex: 0,
         alignItems: 'center',
         justifyContent: 'center',
-    }
+        marginVertical: 10,
+    },
 });
