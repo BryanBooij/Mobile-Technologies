@@ -4,6 +4,9 @@ import MapView, { Marker, Polyline } from "react-native-maps";
 import { useEffect, useState, useRef } from "react";
 import * as Location from 'expo-location';
 import { EredivisieTeams } from '../Components/teamService';
+import TravelTime from "../Components/travelTime";
+import TeamMarker from "../Components/teamMarker";
+import RouteLine from "../Components/routeLine";
 
 export default function Map({ route }) {
     const [location, setLocation] = useState(null);
@@ -166,37 +169,16 @@ export default function Map({ route }) {
                 }}
             >
                 {teams.map((team, index) => (
-                    <Marker
+                    <TeamMarker
                         key={index}
-                        coordinate={{
-                            latitude: team.loc.coordinates[1],
-                            longitude: team.loc.coordinates[0],
-                        }}
-                        title={team.title}
-                        description={team.description}
-                        onPress={() =>
-                            setSelectedVenue({
-                                latitude: team.loc.coordinates[1],
-                                longitude: team.loc.coordinates[0],
-                            })
-                        }
+                        team={team}
+                        onPress={setSelectedVenue}
                     />
                 ))}
-                {routeCoords.length > 0 && (
-                    <Polyline
-                        coordinates={routeCoords}
-                        strokeWidth={5}
-                    />
-                )}
+                <RouteLine coordinates={routeCoords} />
             </MapView>
 
-            {travelTime !== null && (
-                <View style={styles.infoBox}>
-                    <Text style={styles.infoText}>
-                        Estimated travel time: {travelTime} min
-                    </Text>
-                </View>
-            )}
+            <TravelTime minutes={travelTime} />
 
             <StatusBar style="auto" />
         </View>
@@ -211,19 +193,5 @@ const styles = StyleSheet.create({
     map: {
         width: '100%',
         height: '100%',
-    },
-    infoBox: {
-        position: 'absolute',
-        bottom: 40,
-        alignSelf: 'center',
-        backgroundColor: 'white',
-        paddingHorizontal: 16,
-        paddingVertical: 10,
-        borderRadius: 10,
-        elevation: 5,
-    },
-    infoText: {
-        fontSize: 16,
-        fontWeight: 'bold',
     },
 });
