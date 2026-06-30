@@ -1,4 +1,4 @@
-import { View, Text, Image, StyleSheet, Pressable, TextInput } from 'react-native';
+import {View, Text, Image, StyleSheet, Pressable, TextInput, Alert} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useContext, useEffect, useState } from "react";
@@ -100,7 +100,23 @@ export default function ClubDetails({ route }) {
                     />
 
                     <CustomButton
-                        onPress={() => handleDelete(index)}
+                        onPress={() =>
+                            Alert.alert(
+                                "Delete note",
+                                "Are you sure you want to delete this note?",
+                                [
+                                    {
+                                        text: "Cancel",
+                                        style: "cancel",
+                                    },
+                                    {
+                                        text: "Delete",
+                                        style: "destructive",
+                                        onPress: () => handleDelete(index),
+                                    },
+                                ]
+                            )
+                        }
                         icon={<Ionicons name="trash" size={20} color="red" />}
                     />
                 </View>
