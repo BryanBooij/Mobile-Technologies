@@ -14,11 +14,8 @@ export default function Settings() {
             try {
                 const value = await AsyncStorage.getItem("background");
 
-                // sync storage -> context
                 if (value !== null) {
                     const parsed = value === "true";
-
-                    // only update if different (prevents flicker)
                     if (parsed !== isDark) {
                         toggleBackground();
                     }
@@ -27,7 +24,6 @@ export default function Settings() {
                 console.log(e);
             }
         };
-
         loadTheme();
     }, []);
 
@@ -43,7 +39,7 @@ export default function Settings() {
 
     return (
         <View style={[styles.container, { backgroundColor }]}>
-            <Text style={[styles.text, { color: textColor }]}>Turn on DarkMode</Text>
+            <Text style={[styles.text, { color: textColor }]}>Turn on DarkMode throughout the whole app</Text>
             <View style={styles.switch}>
                 <Switch
                     style={styles.switch}
