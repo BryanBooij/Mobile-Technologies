@@ -3,10 +3,21 @@ import { View, Text, StyleSheet } from "react-native";
 export default function TravelTime({ minutes }) {
     if (minutes === null) return null;
 
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+
+    let travelTime;
+
+    if (hours > 0) {
+        travelTime = `${hours}h ${remainingMinutes} min`;
+    } else {
+        travelTime = `${minutes} min`;
+    }
+
     return (
         <View style={styles.infoBox}>
             <Text style={styles.infoText}>
-                Estimated travel time: {minutes} min
+                Estimated travel time: {travelTime}
             </Text>
         </View>
     );
