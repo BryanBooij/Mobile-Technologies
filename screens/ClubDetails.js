@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useContext, useEffect, useState } from "react";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BackgroundContext } from "../Context/BackgroundContext";
-import CustomButton from "../Components/customButton";
+import CustomButton from "../buttons/CustomButton";
 
 export default function ClubDetails({ route }) {
     const { team } = route.params;

@@ -1,9 +1,8 @@
 import { StatusBar } from 'expo-status-bar';
-import {StyleSheet, Text, View, FlatList, Image, Pressable} from 'react-native';
+import { StyleSheet, Text, View, FlatList } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { BackgroundContext } from '../Context/BackgroundContext';
-// import { EredivisieTeams } from '../teams/EredivisieTeams';
-import { EredivisieTeams } from '../Components/teamService';
+import { EredivisieTeams } from '../Components/TeamService';
 import {useContext, useEffect, useState} from "react";
 import TeamList from '../buttons/TeamList';
 

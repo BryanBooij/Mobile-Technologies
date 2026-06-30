@@ -1,12 +1,12 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View, Text } from 'react-native';
-import MapView, { Marker, Polyline } from "react-native-maps";
+import { StyleSheet, View } from 'react-native';
+import MapView from "react-native-maps";
 import { useEffect, useState, useRef } from "react";
 import * as Location from 'expo-location';
-import { EredivisieTeams } from '../Components/teamService';
-import TravelTime from "../Components/travelTime";
-import TeamMarker from "../Components/teamMarker";
-import RouteLine from "../Components/routeLine";
+import { EredivisieTeams } from '../Components/TeamService';
+import TravelTime from "../Components/TravelTime";
+import TeamMarker from "../Components/TeamMarker";
+import RouteLine from "../Components/RouteLine";
 
 export default function Map({ route }) {
     const [location, setLocation] = useState(null);
