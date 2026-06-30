@@ -142,6 +142,10 @@ export default function Map({ route }) {
                 style={styles.map}
                 showsUserLocation={true}
                 initialRegion={region}
+                onPress={() => {
+                    setRouteCoords([]);
+                    setTravelTime(null);
+                }}
                 onMapReady={() => {
                     try {
                         const team = route?.params?.team;
