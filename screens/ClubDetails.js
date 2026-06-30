@@ -1,4 +1,4 @@
-import {View, Text, Image, StyleSheet, Pressable, TextInput, Alert} from 'react-native';
+import {View, Text, Image, StyleSheet, Pressable, TextInput, Alert, Share} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useContext, useEffect, useState } from "react";
@@ -68,6 +68,23 @@ export default function ClubDetails({ route }) {
         setEditingIndex(index);
     };
 
+    const handleShare = async () => {
+        try {
+            await Share.share({
+                message: `
+${team.title}
+
+${team.description}
+
+Mijn notities:
+${notes.join("\n")}
+            `,
+            });
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
     return (
         <View style={[styles.container, { backgroundColor }]}>
 
@@ -118,6 +135,10 @@ export default function ClubDetails({ route }) {
                             )
                         }
                         icon={<Ionicons name="trash" size={20} color="red" />}
+                    />
+                    <CustomButton
+                        onPress={handleShare}
+                        icon={<Ionicons name="share" size={20} color="blue" />}
                     />
                 </View>
             ))}
