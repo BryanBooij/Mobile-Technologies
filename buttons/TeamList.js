@@ -6,12 +6,7 @@ export default function TeamList({ item, navigation }) {
 
     return (
         <Pressable
-            style={({ pressed }) => [
-                styles.card,
-                {
-                    opacity: pressed ? 0.7 : 1,
-                },
-            ]}
+            style={ styles.card }
             onPress={handlePress}
         >
             <Image source={{ uri: item.imageUrl }} style={styles.image} />
