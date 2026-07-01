@@ -141,6 +141,8 @@ export default function Map({ route }) {
                 ref={map}
                 style={styles.map}
                 showsUserLocation={true}
+                showsCompass={true}
+                rotateEnabled={true}
                 initialRegion={region}
                 onPress={() => {
                     setRouteCoords([]);
