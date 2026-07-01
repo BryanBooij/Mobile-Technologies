@@ -12,7 +12,7 @@ export default function Map({ route }) {
     const [location, setLocation] = useState(null);
     const [region, setRegion] = useState(null);
     const [teams, setTeams] = useState([]);
-    const [selectedVenue, setSelectedVenue] = useState(null);
+    const [selectedTeam, setSelectedTeam] = useState(null);
     const [routeCoords, setRouteCoords] = useState([]);
     const [travelTime, setTravelTime] = useState(null); // NEW
     const map = useRef(null);
@@ -76,7 +76,7 @@ export default function Map({ route }) {
 
         const latitude = coords[1];
         const longitude = coords[0];
-        setSelectedVenue({ latitude, longitude });
+        setSelectedTeam({ latitude, longitude });
 
         const regionForTeam = {
             latitude,
@@ -96,7 +96,7 @@ export default function Map({ route }) {
 
     useEffect(() => {
         async function fetchRoute() {
-            if (!selectedVenue || !location) {
+            if (!selectedTeam || !location) {
                 setRouteCoords([]);
                 setTravelTime(null);
                 return;
@@ -105,7 +105,7 @@ export default function Map({ route }) {
                 const url =
                     `https://router.project-osrm.org/route/v1/driving/` +
                     `${location.coords.longitude},${location.coords.latitude};` +
-                    `${selectedVenue.longitude},${selectedVenue.latitude}` +
+                    `${selectedTeam.longitude},${selectedTeam.latitude}` +
                     `?overview=full&geometries=geojson`;
 
                 const response = await fetch(url);
@@ -129,7 +129,7 @@ export default function Map({ route }) {
             }
         }
         fetchRoute();
-    }, [selectedVenue, location]);
+    }, [selectedTeam, location]);
 
     if (!region) {
         return <View style={styles.container} />;
@@ -178,7 +178,7 @@ export default function Map({ route }) {
                     <TeamMarker
                         key={index}
                         team={team}
-                        onPress={setSelectedVenue}
+                        onPress={setSelectedTeam}
                     />
                 ))}
                 <RouteLine coordinates={routeCoords} />
